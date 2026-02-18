@@ -446,18 +446,21 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="h-screen flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-background flex items-start justify-center">
+      <div className="w-full max-w-7xl h-screen flex flex-col lg:flex-row mx-auto">
         {/* Left Half - Input Area */}
-        <div className="w-full lg:w-1/2 p-6 lg:p-10 flex flex-col">
+        <div className="w-full lg:w-1/2 p-6 lg:p-10 flex flex-col items-center">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-foreground mb-2">Doctor Bias Detector</h1>
-            <p className="text-sm text-muted-foreground">AI-powered medical note fairness analysis</p>
+          <div className="mb-8 flex items-center gap-3 w-full">
+            <img src="/images/logo.png" alt="ETHICORE logo" className="w-10 h-10" />
+            <div>
+              <h1 className="text-foreground text-xl font-bold tracking-tight">ETHICORE</h1>
+              <p className="text-xs text-muted-foreground">AI-powered medical note fairness analysis</p>
+            </div>
           </div>
 
           {/* Mode Toggle Buttons */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6 w-full">
             <button
               onClick={() => setInputMode("notes")}
               className={`px-4 py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${
@@ -505,7 +508,7 @@ export default function App() {
           </div>
 
           {/* Input Area */}
-          <div className="flex-1 mb-6">
+          <div className="flex-1 mb-6 w-full">
             {inputMode === "notes" ? (
               <FileUploadCard
                 onTextExtracted={setInputText}
@@ -743,7 +746,7 @@ export default function App() {
 
           {/* Analyze Button - Hide in Stream mode */}
           {inputMode !== "stream" && (
-            <>
+            <div className="w-full">
               <Button
                 onClick={analyzeText}
                 disabled={isAnalyzing || isProcessingOCR || !inputText.trim()}
@@ -769,14 +772,14 @@ export default function App() {
                 <Lock className="w-3 h-3" />
                 Offline Safe Mode -- Results saved locally
               </p>
-            </>
+            </div>
           )}
         </div>
 
         {/* Right Half - Results Area */}
-        <div className="w-full lg:w-1/2 bg-muted p-6 lg:p-10 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
+        <div className="w-full lg:w-1/2 bg-muted p-6 lg:p-10 flex flex-col items-center border-t lg:border-t-0 lg:border-l border-border">
           {inputMode === "stream" ? (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col w-full">
               <h2 className="text-foreground mb-4">Stream Analysis</h2>
               
               {sceneSummary ? (
