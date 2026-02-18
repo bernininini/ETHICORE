@@ -28,7 +28,6 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
 
   const startCamera = async () => {
     try {
-      // Check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera API not supported in this browser");
       }
@@ -46,15 +45,13 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
       setIsCameraActive(true);
       toast.success("Camera activated for non-verbal analysis");
       
-      // Start analyzing frames every 3 seconds
       intervalRef.current = window.setInterval(() => {
         captureAndAnalyzeFrame();
       }, 3000);
       
     } catch (error: any) {
-      console.error("📹 Camera access denied:", error.name || error.message);
+      console.error("Camera access denied:", error.name || error.message);
       
-      // Show appropriate error message
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
         toast.error("Camera access denied. Please allow camera access in your browser settings.", {
           duration: 5000
@@ -96,12 +93,10 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
     
     if (!context) return;
     
-    // Capture frame
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
     
-    // Convert to blob
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       
@@ -130,18 +125,15 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
         const data = await response.json();
         
         if (data.detectedCues && data.detectedCues.length > 0) {
-          // Accumulate unique cues
           setAllDetectedCues(prev => {
             const combined = [...prev, ...data.detectedCues];
             const unique = Array.from(new Set(combined));
             return unique;
           });
           
-          // Notify parent with all accumulated cues
           onCuesDetected(data.detectedCues, data.analysis);
           
-          // Show subtle notification
-          toast.warning(`⚠️ Non-verbal cue detected: ${data.detectedCues[0]}`, {
+          toast.warning(`Non-verbal cue detected: ${data.detectedCues[0]}`, {
             duration: 3000,
           });
         }
@@ -179,8 +171,8 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
         </Button>
         
         {isAnalyzing && (
-          <div className="flex items-center gap-1 text-xs text-teal-600">
-            <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
+          <div className="flex items-center gap-1 text-xs text-foreground">
+            <div className="w-2 h-2 bg-foreground rounded-full animate-pulse"></div>
             Analyzing...
           </div>
         )}
@@ -188,7 +180,7 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
       
       {/* Camera Preview */}
       {isCameraActive && (
-        <div className="relative rounded-lg overflow-hidden border-2 border-teal-300 bg-black">
+        <div className="relative rounded-lg overflow-hidden border border-border bg-foreground">
           <video
             ref={videoRef}
             autoPlay
@@ -198,20 +190,20 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
           />
           
           {/* Live indicator */}
-          <div className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full flex items-center gap-1">
+          <div className="absolute top-2 right-2 px-2 py-1 bg-foreground text-background text-xs rounded-full flex items-center gap-1">
             <Video className="w-3 h-3" />
             LIVE
           </div>
           
           {/* Accumulated cues display */}
           {allDetectedCues.length > 0 && (
-            <div className="absolute bottom-2 left-2 right-2 px-3 py-2 bg-black/70 backdrop-blur-sm rounded-lg">
-              <p className="text-xs text-white mb-1">Detected this session:</p>
+            <div className="absolute bottom-2 left-2 right-2 px-3 py-2 bg-foreground/80 backdrop-blur-sm rounded-lg">
+              <p className="text-xs text-background mb-1">Detected this session:</p>
               <div className="flex flex-wrap gap-1">
                 {allDetectedCues.map((cue, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full"
+                    className="px-2 py-0.5 bg-background text-foreground text-xs rounded-full"
                   >
                     {cue}
                   </span>
@@ -226,9 +218,9 @@ export function FaceDetector({ onCuesDetected, isRecording }: FaceDetectorProps)
       <canvas ref={canvasRef} className="hidden" />
       
       {/* Info text */}
-      <p className="text-xs text-gray-500 italic">
+      <p className="text-xs text-muted-foreground italic">
         {isCameraActive 
-          ? "📹 Analyzing for non-verbal bias indicators every 3 seconds"
+          ? "Analyzing for non-verbal bias indicators every 3 seconds"
           : "Enable camera to detect non-verbal cues during recording"
         }
       </p>

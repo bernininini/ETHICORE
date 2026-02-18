@@ -27,7 +27,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
       console.log("Setting up video element with stream:", stream.getTracks());
       videoRef.current.srcObject = stream;
       
-      // Wait for metadata to load before playing
       const handleLoadedMetadata = () => {
         console.log("Video metadata loaded, dimensions:", videoRef.current?.videoWidth, "x", videoRef.current?.videoHeight);
         videoRef.current?.play().catch(err => {
@@ -59,7 +58,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     try {
       setCameraError("");
       
-      // Check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera API not supported in this browser");
       }
@@ -74,27 +72,23 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
       
       setStream(mediaStream);
       setIsCameraActive(true);
-      setStatusMessage("🟢 Live Camera Active");
+      setStatusMessage("Live Camera Active");
       setDescriptionHistory([]);
-      toast.success("🎥 Stream mode activated - AI analyzing in real-time!");
+      toast.success("Stream mode activated - AI analyzing in real-time!");
       
-      // Wait a moment for video to fully initialize, then start analyzing
       setTimeout(() => {
-        console.log("🎬 Starting frame analysis...");
-        // First analysis immediately
+        console.log("Starting frame analysis...");
         captureAndAnalyzeFrame();
         
-        // Then continue every 1 second (faster analysis)
         intervalRef.current = window.setInterval(() => {
-          console.log("⏱️ Interval tick - capturing frame...");
+          console.log("Interval tick - capturing frame...");
           captureAndAnalyzeFrame();
         }, 1000);
       }, 500);
       
     } catch (error: any) {
-      console.error("📹 Camera access denied:", error.name || error.message);
+      console.error("Camera access denied:", error.name || error.message);
       
-      // Show appropriate error message
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
         setCameraError("Camera access denied");
         toast.error("Camera access denied. Please allow camera access in your browser settings.", {
@@ -126,7 +120,7 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     }
     
     setIsCameraActive(false);
-    setStatusMessage("🔴 Stopped");
+    setStatusMessage("Stopped");
     setLatestDescription("");
     setDescriptionHistory([]);
     setCameraError("");
@@ -139,7 +133,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
       return;
     }
 
-    // Create formatted text content
     const currentDate = new Date().toLocaleString();
     let txtContent = `DOCTOR BIAS DETECTOR - STREAM ANALYSIS REPORT\n`;
     txtContent += `Generated: ${currentDate}\n`;
@@ -154,7 +147,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     txtContent += `${"=".repeat(60)}\n`;
     txtContent += `End of Report\n`;
 
-    // Create and download file
     const blob = new Blob([txtContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -165,14 +157,14 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    toast.success("📄 Report saved successfully!");
+    toast.success("Report saved successfully!");
   };
 
   const captureAndAnalyzeFrame = async () => {
-    console.log("📸 captureAndAnalyzeFrame called");
+    console.log("captureAndAnalyzeFrame called");
     
     if (!videoRef.current || !canvasRef.current) {
-      console.log("❌ Missing refs:", { video: !!videoRef.current, canvas: !!canvasRef.current });
+      console.log("Missing refs:", { video: !!videoRef.current, canvas: !!canvasRef.current });
       return;
     }
     
@@ -181,37 +173,32 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     const context = canvas.getContext("2d");
     
     if (!context) {
-      console.log("❌ No canvas context");
+      console.log("No canvas context");
       return;
     }
     
-    // Check if video has valid dimensions
     if (!video.videoWidth || !video.videoHeight) {
-      console.log("⏳ Video not ready yet, dimensions:", video.videoWidth, "x", video.videoHeight);
+      console.log("Video not ready yet, dimensions:", video.videoWidth, "x", video.videoHeight);
       return;
     }
     
-    console.log("✅ Capturing frame from video:", video.videoWidth, "x", video.videoHeight);
+    console.log("Capturing frame from video:", video.videoWidth, "x", video.videoHeight);
     
-    // Capture frame
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
     
-    // Convert to blob
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       
       setIsAnalyzing(true);
       
       try {
-        // Check if Supabase is configured
         const hasSupabase = projectId && publicAnonKey && 
                            projectId !== "YOUR_PROJECT_ID" && 
                            publicAnonKey !== "YOUR_ANON_KEY";
         
         if (hasSupabase) {
-          // Try real API
           const formData = new FormData();
           formData.append("frame", blob, "frame.jpg");
           
@@ -239,7 +226,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
           }
         }
         
-        // Fallback to demo mode
         console.log("Using demo mode for scene analysis");
         const demoDescriptions = [
           "Doctor reviewing patient chart with focused expression. Professional posture maintained.",
@@ -264,7 +250,6 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
       } catch (error) {
         console.warn("Scene analysis error:", error instanceof Error ? error.message : error);
         
-        // Even on error, provide demo description
         const fallbackDescription = "Medical workspace visible. Professional environment maintained.";
         const timestamp = new Date().toLocaleTimeString();
         setLatestDescription(fallbackDescription);
@@ -280,39 +265,39 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
     <div className="w-full h-full flex flex-col lg:flex-row gap-6">
       {/* Left: Camera Feed */}
       <div className="flex-1 flex flex-col gap-3">
-        {/* Camera permission denied banner - amber theme */}
+        {/* Camera permission denied banner */}
         {cameraError && (
-          <div className="px-4 py-3 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-start gap-3 shadow-md animate-fade-in">
-            <span className="text-xl">⚠️</span>
+          <div className="px-4 py-3 bg-muted border border-border rounded-lg flex items-start gap-3 animate-fade-in">
+            <AlertCircle className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm text-amber-900 mb-1">
+              <p className="text-sm text-foreground mb-1">
                 <strong>Camera Access Blocked</strong>
               </p>
-              <p className="text-xs text-amber-800 mb-1">
-                Camera permission denied — enable camera in site settings.
+              <p className="text-xs text-muted-foreground mb-1">
+                Camera permission denied -- enable camera in site settings.
               </p>
-              <p className="text-xs text-amber-700 font-semibold">
-                🎥 Click 🔒 in address bar → Allow Camera → Refresh page
+              <p className="text-xs text-foreground font-semibold">
+                Click the lock icon in address bar, allow Camera, then refresh page.
               </p>
             </div>
             <button
               onClick={() => setCameraError("")}
-              className="text-amber-700 hover:text-amber-900 text-sm font-bold"
+              className="text-muted-foreground hover:text-foreground text-sm font-bold"
             >
-              ✕
+              {"x"}
             </button>
           </div>
         )}
         
         <div className="flex items-center justify-between">
-          <h3 className="text-gray-700">Live Camera Feed</h3>
+          <h3 className="text-foreground">Live Camera Feed</h3>
           <div className="flex gap-2">
             {descriptionHistory.length > 0 && (
               <Button
                 onClick={saveReportAsTxt}
                 variant="outline"
                 size="sm"
-                className="border-teal-600 text-teal-700 hover:bg-teal-50"
+                className="border-border text-foreground hover:bg-muted"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Save Report
@@ -322,7 +307,7 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
               onClick={isCameraActive ? stopCamera : startCamera}
               variant={isCameraActive ? "destructive" : "default"}
               size="sm"
-              className={!isCameraActive ? "bg-teal-600 hover:bg-teal-700" : ""}
+              className={!isCameraActive ? "bg-foreground hover:bg-foreground/90 text-background" : ""}
             >
               {isCameraActive ? (
                 <>
@@ -340,7 +325,7 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
         </div>
         
         {/* Camera Preview */}
-        <div className="relative rounded-xl overflow-hidden border-2 border-teal-300 bg-gray-900 aspect-video shadow-lg">
+        <div className="relative rounded-lg overflow-hidden border border-border bg-foreground aspect-video">
           {isCameraActive ? (
             <>
               <video
@@ -353,26 +338,26 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
               />
               
               {/* Live indicator */}
-              <div className="absolute top-3 right-3 px-3 py-1.5 bg-red-500 text-white rounded-full flex items-center gap-2 shadow-lg">
+              <div className="absolute top-3 right-3 px-3 py-1.5 bg-foreground text-background rounded-full flex items-center gap-2">
                 <Video className="w-4 h-4" />
                 <span className="text-xs font-semibold">LIVE</span>
               </div>
               
               {/* Analyzing indicator */}
               {isAnalyzing && (
-                <div className="absolute top-3 left-3 px-3 py-1.5 bg-teal-600 text-white rounded-full flex items-center gap-2 shadow-lg">
+                <div className="absolute top-3 left-3 px-3 py-1.5 bg-foreground text-background rounded-full flex items-center gap-2">
                   <Sparkles className="w-4 h-4 animate-pulse" />
                   <span className="text-xs font-semibold">Analyzing...</span>
                 </div>
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center text-gray-400">
+            <div className="w-full h-full flex items-center justify-center bg-muted">
+              <div className="text-center text-muted-foreground">
                 <Camera className="w-16 h-16 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">Click "Start Camera" to begin streaming</p>
                 {cameraError && (
-                  <p className="text-xs mt-2 text-red-400">{cameraError}</p>
+                  <p className="text-xs mt-2 text-destructive">{cameraError}</p>
                 )}
               </div>
             </div>
@@ -380,40 +365,40 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
         </div>
         
         {/* Status Bar */}
-        <div className={`px-4 py-2 rounded-lg border-2 ${
+        <div className={`px-4 py-2 rounded-lg border ${
           isCameraActive 
-            ? 'bg-green-50 border-green-300 text-green-700' 
-            : 'bg-gray-50 border-gray-300 text-gray-600'
+            ? 'bg-foreground text-background border-foreground' 
+            : 'bg-muted border-border text-muted-foreground'
         }`}>
           <p className="text-sm font-semibold text-center">{statusMessage}</p>
         </div>
         
         {/* Info text */}
-        <p className="text-xs text-gray-500 italic">
-          📹 AI analyzes the scene in real-time (every second) to detect actions, expressions, and objects
+        <p className="text-xs text-muted-foreground italic">
+          AI analyzes the scene in real-time (every second) to detect actions, expressions, and objects
         </p>
       </div>
       
       {/* Right: AI Description */}
       <div className="flex-1 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-gray-700">🧠 AI Scene Analysis</h3>
+          <h3 className="text-foreground">AI Scene Analysis</h3>
           <div className="flex items-center gap-2">
             {descriptionHistory.length > 0 && (
               <Button
                 onClick={saveReportAsTxt}
                 variant="outline"
                 size="sm"
-                className="border-teal-600 text-teal-700 hover:bg-teal-50"
+                className="border-border text-foreground hover:bg-muted"
               >
                 <Download className="w-4 h-4 mr-1" />
                 Save
               </Button>
             )}
             {isCameraActive && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-teal-100 rounded-full">
-                <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
-                <span className="text-xs text-teal-700 font-semibold">
+              <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-full border border-border">
+                <div className="w-2 h-2 bg-foreground rounded-full animate-pulse"></div>
+                <span className="text-xs text-foreground font-semibold">
                   {isAnalyzing ? "Analyzing..." : "Active"}
                 </span>
               </div>
@@ -421,20 +406,20 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
           </div>
         </div>
         
-        <div className="flex-1 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl border-2 border-teal-200 p-6 overflow-auto min-h-[250px]">
+        <div className="flex-1 bg-background rounded-lg border border-border p-6 overflow-auto min-h-[250px]">
           {latestDescription ? (
             <div className="space-y-4">
               {/* Latest description */}
               <div className="animate-fade-in">
                 <div className="mb-3 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-teal-700 font-semibold uppercase tracking-wide">Latest Scene</span>
-                  <span className="text-xs text-gray-500 italic">
+                  <div className="w-2 h-2 bg-foreground rounded-full animate-pulse"></div>
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Latest Scene</span>
+                  <span className="text-xs text-muted-foreground italic">
                     {new Date().toLocaleTimeString()}
                   </span>
                 </div>
-                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border-2 border-teal-300 shadow-sm">
-                  <p className="text-gray-800 leading-relaxed">
+                <div className="bg-muted rounded-lg p-4 border border-border">
+                  <p className="text-foreground leading-relaxed">
                     {latestDescription}
                   </p>
                 </div>
@@ -444,14 +429,14 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
               {descriptionHistory.length > 1 && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600 font-semibold">Previous Updates</span>
-                    <div className="h-px flex-1 bg-gray-300"></div>
+                    <span className="text-xs text-muted-foreground font-semibold">Previous Updates</span>
+                    <div className="h-px flex-1 bg-border"></div>
                   </div>
                   <div className="space-y-2 max-h-[200px] overflow-y-auto">
                     {descriptionHistory.slice(0, -1).slice(-4).reverse().map((item, idx) => (
-                      <div key={idx} className="bg-white/40 rounded-lg p-3 border border-gray-200 opacity-75">
-                        <p className="text-xs text-gray-500 mb-1">{item.time}</p>
-                        <p className="text-sm text-gray-700">{item.text}</p>
+                      <div key={idx} className="bg-muted/50 rounded-lg p-3 border border-border opacity-75">
+                        <p className="text-xs text-muted-foreground mb-1">{item.time}</p>
+                        <p className="text-sm text-foreground">{item.text}</p>
                       </div>
                     ))}
                   </div>
@@ -459,34 +444,34 @@ export function StreamVision({ onSceneAnalyzed }: StreamVisionProps) {
               )}
               
               {isCameraActive && (
-                <div className="flex items-center justify-between gap-2 text-xs text-gray-600 bg-white/40 rounded-lg p-3 border border-teal-100">
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground bg-muted rounded-lg p-3 border border-border">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-teal-600" />
+                    <Brain className="w-4 h-4 text-foreground" />
                     <span>Updates in real-time (every second) while camera is active</span>
                   </div>
-                  <span className="text-teal-700 font-semibold">
+                  <span className="text-foreground font-semibold">
                     {descriptionHistory.length} observation{descriptionHistory.length !== 1 ? 's' : ''}
                   </span>
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-center text-gray-400">
+            <div className="h-full flex items-center justify-center text-center text-muted-foreground">
               <div className="max-w-xs">
                 <Brain className="w-16 h-16 mx-auto mb-3 opacity-20" />
                 <p className="text-sm mb-2">Waiting for camera to start</p>
-                <p className="text-xs opacity-75">Click \"Start Camera\" to begin real-time AI analysis</p>
+                <p className="text-xs opacity-75">Click "Start Camera" to begin real-time AI analysis</p>
               </div>
             </div>
           )}
         </div>
         
-        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-300 rounded-lg p-4 shadow-sm">
-          <p className="text-xs text-teal-800 mb-2">
-            <strong>🧠 Real-Time Vision Analysis</strong>
+        <div className="bg-muted border border-border rounded-lg p-4">
+          <p className="text-xs text-foreground mb-2">
+            <strong>Real-Time Vision Analysis</strong>
           </p>
-          <p className="text-xs text-teal-700 leading-relaxed">
-            Detects: Facial expressions • Hand gestures • Objects (pencil, stethoscope, etc.) • Body language • Interaction patterns • Environmental context
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {'Detects: Facial expressions \u2022 Hand gestures \u2022 Objects (pencil, stethoscope, etc.) \u2022 Body language \u2022 Interaction patterns \u2022 Environmental context'}
           </p>
         </div>
       </div>
