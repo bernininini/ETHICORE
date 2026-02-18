@@ -9,11 +9,11 @@ export function FairnessScoreMeter({ score }: FairnessScoreMeterProps) {
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
-  // Determine color based on score
+  // Black and white only - use opacity to indicate score
   const getColor = () => {
-    if (score >= 80) return "#10b981"; // Green
-    if (score >= 50) return "#f59e0b"; // Yellow
-    return "#ef4444"; // Red
+    if (score >= 80) return "#000000";
+    if (score >= 50) return "#666666";
+    return "#999999";
   };
 
   const color = getColor();
@@ -50,10 +50,10 @@ export function FairnessScoreMeter({ score }: FairnessScoreMeterProps) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-3xl" style={{ color }}>
+          <div className="text-3xl text-foreground">
             {score}%
           </div>
-          <div className="text-xs text-gray-500">Fairness</div>
+          <div className="text-xs text-muted-foreground">Fairness</div>
         </div>
       </div>
     </div>

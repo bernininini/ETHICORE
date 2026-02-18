@@ -7,7 +7,7 @@ import { StreamVision } from "./components/StreamVision";
 import { LiveTranscriptionDisplay } from "./components/LiveTranscriptionDisplay";
 import { Button } from "./components/ui/button";
 import { Textarea } from "./components/ui/textarea";
-import { Save, Mic, MicOff, Loader2, Upload, Radio, Brain } from "lucide-react";
+import { Save, Mic, MicOff, Loader2, Upload, Radio, Brain, Pencil, FileText, Lock, Info, AlertTriangle, Video as VideoIcon } from "lucide-react";
 import { projectId, publicAnonKey } from "./utils/supabase/info";
 import { toast } from "sonner@2.0.3";
 
@@ -97,9 +97,8 @@ export default function App() {
     const inIframe = window.self !== window.top;
     if (inIframe && inputMode === "speech") {
       console.log("Detected iframe environment - microphone access may be restricted");
-      // Show a one-time informational toast
       setTimeout(() => {
-        toast.info("💡 Note: Live recording unavailable in Figma Make", {
+        toast.info("Note: Live recording unavailable in Figma Make", {
           description: "Use 'Upload Audio' to upload pre-recorded files",
           duration: 6000,
         });
@@ -137,7 +136,7 @@ export default function App() {
       // Proactive check for iframe environment
       if (isInIframe()) {
         setMicPermissionDenied(true);
-        toast.error("🚫 Live recording unavailable in Figma Make", {
+        toast.error("Live recording unavailable in Figma Make", {
           description: "Please use 'Upload Audio' button to upload a pre-recorded file instead.",
           duration: 5000,
         });
@@ -190,7 +189,7 @@ export default function App() {
       setIsRecording(true);
       setIsLiveTranscribing(true);
       
-      toast.success("🎙️ Live recording started - speak now!", {
+      toast.success("Live recording started - speak now!", {
         duration: 2000
       });
       
@@ -201,16 +200,16 @@ export default function App() {
           streamChunksRef.current = [];
           
           const audioBlob = new Blob(chunksToSend, { type: "audio/webm" });
-          console.log(`📤 Sending audio chunk for transcription (${audioBlob.size} bytes)`);
+          console.log(`Sending audio chunk for transcription (${audioBlob.size} bytes)`);
           await transcribeStreamingAudio(audioBlob);
         } else {
-          console.log("⏸️ No audio chunks collected in this interval");
+          console.log("No audio chunks collected in this interval");
         }
       }, 2000);
       
     } catch (error) {
       const domError = error as DOMException;
-      console.info("🎤 Microphone access unavailable:", domError.name || "Unknown error");
+      console.info("Microphone access unavailable:", domError.name || "Unknown error");
       
       // Handle different types of microphone errors
       if (error instanceof DOMException) {
@@ -219,13 +218,13 @@ export default function App() {
           
           // Check if likely iframe issue
           if (isInIframe()) {
-            toast.error("🚫 Microphone blocked by Figma Make", {
-              description: "Use the 'Upload Audio' button (highlighted in cyan) to upload a pre-recorded file instead.",
+            toast.error("Microphone blocked by Figma Make", {
+              description: "Use the 'Upload Audio' button to upload a pre-recorded file instead.",
               duration: 8000,
             });
           } else {
-            toast.error("🎤 Microphone access denied", {
-              description: "Click the 🔒 icon in your browser's address bar to allow microphone access, then try again.",
+            toast.error("Microphone access denied", {
+              description: "Click the lock icon in your browser's address bar to allow microphone access, then try again.",
               duration: 8000,
             });
           }
@@ -315,7 +314,7 @@ export default function App() {
       if (data.warning || data.isDemoMode) {
         console.warn("Transcription warning:", data.warning);
         if (!interimTranscript && !inputText) {
-          toast.warning("⚠️ " + (data.warning || "Using demo mode - configure ElevenLabs API for real transcription"), {
+          toast.warning(data.warning || "Using demo mode - configure ElevenLabs API for real transcription", {
             duration: 6000
           });
         }
@@ -446,64 +445,62 @@ export default function App() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 50) return "text-yellow-600";
-    return "text-red-600";
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-background">
       <div className="h-screen flex flex-col lg:flex-row">
         {/* Left Half - Input Area */}
         <div className="w-full lg:w-1/2 p-6 lg:p-10 flex flex-col">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-teal-700 mb-2">Doctor Bias Detector</h1>
-            <p className="text-sm text-gray-600">AI-powered medical note fairness analysis</p>
+            <h1 className="text-foreground mb-2">Doctor Bias Detector</h1>
+            <p className="text-sm text-muted-foreground">AI-powered medical note fairness analysis</p>
           </div>
 
           {/* Mode Toggle Buttons */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
             <button
               onClick={() => setInputMode("notes")}
-              className={`px-4 py-3 rounded-xl border-2 transition-all ${
+              className={`px-4 py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${
                 inputMode === "notes"
-                  ? "bg-teal-100 border-teal-400 text-teal-800"
-                  : "bg-white/60 border-gray-200 text-gray-600 hover:border-teal-300"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background border-border text-foreground hover:bg-muted"
               }`}
             >
-              <span>✏️ Written Notes</span>
+              <Pencil className="w-4 h-4" />
+              <span>Notes</span>
             </button>
             <button
               onClick={() => setInputMode("plaintext")}
-              className={`px-4 py-3 rounded-xl border-2 transition-all ${
+              className={`px-4 py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${
                 inputMode === "plaintext"
-                  ? "bg-teal-100 border-teal-400 text-teal-800"
-                  : "bg-white/60 border-gray-200 text-gray-600 hover:border-teal-300"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background border-border text-foreground hover:bg-muted"
               }`}
             >
-              <span>📄 Plain Text</span>
+              <FileText className="w-4 h-4" />
+              <span>Plain Text</span>
             </button>
             <button
               onClick={() => setInputMode("speech")}
-              className={`px-4 py-3 rounded-xl border-2 transition-all ${
+              className={`px-4 py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${
                 inputMode === "speech"
-                  ? "bg-teal-100 border-teal-400 text-teal-800"
-                  : "bg-white/60 border-gray-200 text-gray-600 hover:border-teal-300"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background border-border text-foreground hover:bg-muted"
               }`}
             >
-              <span>🎙️ Speech</span>
+              <Mic className="w-4 h-4" />
+              <span>Speech</span>
             </button>
             <button
               onClick={() => setInputMode("stream")}
-              className={`px-4 py-3 rounded-xl border-2 transition-all ${
+              className={`px-4 py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${
                 inputMode === "stream"
-                  ? "bg-teal-100 border-teal-400 text-teal-800"
-                  : "bg-white/60 border-gray-200 text-gray-600 hover:border-teal-300"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-background border-border text-foreground hover:bg-muted"
               }`}
             >
-              <span>�� Stream</span>
+              <VideoIcon className="w-4 h-4" />
+              <span>Stream</span>
             </button>
           </div>
 
@@ -519,68 +516,68 @@ export default function App() {
             ) : inputMode === "stream" ? (
               <StreamVision onSceneAnalyzed={handleSceneAnalyzed} />
             ) : inputMode === "speech" ? (
-              <div className="h-full bg-white/60 backdrop-blur-sm rounded-2xl border-2 border-gray-200 p-8 flex flex-col items-center justify-center gap-6">
+              <div className="h-full bg-background rounded-lg border border-border p-8 flex flex-col items-center justify-center gap-6">
                 {!inputText && !interimTranscript ? (
                   <>
                     {/* Warning if mic permission denied */}
                     {micPermissionDenied && (
-                      <div className="w-full max-w-md px-4 py-3 bg-blue-50 border-2 border-blue-400 rounded-xl flex items-start gap-3 shadow-md animate-fade-in">
-                        <span className="text-2xl">ℹ️</span>
+                      <div className="w-full max-w-md px-4 py-3 bg-muted border border-border rounded-lg flex items-start gap-3 animate-fade-in">
+                        <Info className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                         <div className="flex-1">
-                          <p className="text-sm text-blue-900 mb-2">
+                          <p className="text-sm text-foreground mb-2">
                             <strong>Microphone Access Denied</strong>
                           </p>
                           {isInIframe() ? (
                             <>
-                              <p className="text-xs text-blue-800 mb-2">
-                                Live recording unavailable in Figma Make — allow in site settings.
+                              <p className="text-xs text-muted-foreground mb-2">
+                                Live recording unavailable in Figma Make -- allow in site settings.
                               </p>
-                              <p className="text-xs text-blue-700 font-semibold mb-1">
-                                ✅ Use <span className="text-cyan-700 underline">Upload Audio</span> button below instead
+                              <p className="text-xs text-foreground font-semibold mb-1">
+                                Use <span className="underline">Upload Audio</span> button below instead
                               </p>
                             </>
                           ) : (
                             <>
-                              <p className="text-xs text-blue-800 mb-2">
-                                Microphone access denied — allow in site settings.
+                              <p className="text-xs text-muted-foreground mb-2">
+                                Microphone access denied -- allow in site settings.
                               </p>
-                              <p className="text-xs text-blue-700 font-semibold mb-1">
-                                🔓 Click 🔒 in address bar → Allow Microphone → Refresh
+                              <p className="text-xs text-foreground font-semibold mb-1">
+                                Click the lock icon in address bar to allow microphone, then refresh.
                               </p>
                             </>
                           )}
-                          <p className="text-xs text-gray-600 mt-2 italic">
+                          <p className="text-xs text-muted-foreground mt-2 italic">
                             Supported formats: MP3, WAV, M4A, WebM, OGG
                           </p>
                         </div>
                         <button
                           onClick={() => setMicPermissionDenied(false)}
-                          className="text-blue-700 hover:text-blue-900 text-sm font-bold"
+                          className="text-muted-foreground hover:text-foreground text-sm font-bold"
                         >
-                          ✕
+                          {"x"}
                         </button>
                       </div>
                     )}
 
                     <div className="text-center">
                       {isRecording ? (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 border-2 border-teal-400 rounded-xl mb-2 animate-pulse">
-                          <div className="w-2 h-2 bg-teal-600 rounded-full animate-pulse"></div>
-                          <p className="text-teal-900 font-semibold">
-                            🎙 Listening...
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg mb-2 animate-pulse">
+                          <div className="w-2 h-2 bg-foreground rounded-full animate-pulse"></div>
+                          <p className="text-foreground font-semibold">
+                            Listening...
                           </p>
                         </div>
                       ) : isTranscribing ? (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-100 border-2 border-cyan-400 rounded-xl mb-2">
-                          <Loader2 className="w-4 h-4 text-cyan-600 animate-spin" />
-                          <p className="text-cyan-900 font-semibold">
-                            🔄 Transcribing...
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg mb-2">
+                          <Loader2 className="w-4 h-4 text-foreground animate-spin" />
+                          <p className="text-foreground font-semibold">
+                            Transcribing...
                           </p>
                         </div>
                       ) : (
-                        <p className="text-gray-700 mb-2">Record or upload audio</p>
+                        <p className="text-foreground mb-2">Record or upload audio</p>
                       )}
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {isRecording ? "Speak clearly into your microphone" : isTranscribing ? "Please wait..." : "Choose an option below"}
                       </p>
                     </div>
@@ -593,29 +590,29 @@ export default function App() {
                           disabled={isTranscribing}
                           className={`p-6 rounded-full transition-all ${
                             isRecording
-                              ? "bg-red-500 hover:bg-red-600 animate-pulse ring-4 ring-red-200"
+                              ? "bg-foreground hover:bg-foreground/90 animate-pulse ring-4 ring-border"
                               : isTranscribing
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-teal-600 hover:bg-teal-700 hover:scale-105"
+                              ? "bg-muted cursor-not-allowed"
+                              : "bg-foreground hover:bg-foreground/90 hover:scale-105"
                           }`}
                         >
                           {isTranscribing ? (
-                            <Loader2 className="w-10 h-10 text-white animate-spin" />
+                            <Loader2 className="w-10 h-10 text-background animate-spin" />
                           ) : isRecording ? (
-                            <MicOff className="w-10 h-10 text-white" />
+                            <MicOff className="w-10 h-10 text-background" />
                           ) : (
-                            <Radio className="w-10 h-10 text-white" />
+                            <Radio className="w-10 h-10 text-background" />
                           )}
                         </button>
-                        <p className="text-xs text-gray-600 font-medium">
+                        <p className="text-xs text-foreground font-medium">
                           {isRecording ? "Stop Recording" : "Live Record"}
                         </p>
                         {!isRecording && (
-                          <p className="text-xs text-gray-400 italic">Real-time transcription</p>
+                          <p className="text-xs text-muted-foreground italic">Real-time transcription</p>
                         )}
                       </div>
 
-                      <div className="text-gray-400">or</div>
+                      <div className="text-muted-foreground">or</div>
 
                       {/* Upload Button */}
                       <div className="flex flex-col items-center gap-2">
@@ -624,19 +621,19 @@ export default function App() {
                           disabled={isRecording || isTranscribing}
                           className={`p-6 rounded-full transition-all ${
                             isRecording || isTranscribing
-                              ? "bg-gray-400 cursor-not-allowed"
+                              ? "bg-muted cursor-not-allowed"
                               : micPermissionDenied
-                              ? "bg-cyan-600 hover:bg-cyan-700 ring-4 ring-cyan-200"
-                              : "bg-cyan-600 hover:bg-cyan-700 hover:scale-105"
+                              ? "bg-foreground ring-4 ring-border"
+                              : "bg-foreground hover:bg-foreground/90 hover:scale-105"
                           }`}
                         >
-                          <Upload className="w-10 h-10 text-white" />
+                          <Upload className="w-10 h-10 text-background" />
                         </button>
-                        <p className={`text-xs ${micPermissionDenied ? "text-cyan-700 font-semibold" : "text-gray-600"}`}>
-                          Upload Audio {micPermissionDenied && "👈"}
+                        <p className={`text-xs ${micPermissionDenied ? "text-foreground font-semibold" : "text-foreground"}`}>
+                          Upload Audio
                         </p>
                         {!isRecording && (
-                          <p className="text-xs text-gray-400 italic">Pre-recorded file</p>
+                          <p className="text-xs text-muted-foreground italic">Pre-recorded file</p>
                         )}
                       </div>
                       
@@ -651,9 +648,9 @@ export default function App() {
                     </div>
 
                     {!isRecording && !isTranscribing && (
-                      <div className="mt-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-lg">
-                        <p className="text-xs text-teal-700 text-center">
-                          💡 <strong>Live Record</strong> for real-time transcription or <strong>Upload Audio</strong> for pre-recorded files
+                      <div className="mt-2 px-4 py-2 bg-muted border border-border rounded-lg">
+                        <p className="text-xs text-muted-foreground text-center">
+                          <strong>Live Record</strong> for real-time transcription or <strong>Upload Audio</strong> for pre-recorded files
                         </p>
                       </div>
                     )}
@@ -662,24 +659,24 @@ export default function App() {
                   <div className="w-full h-full flex flex-col">
                     {/* Live transcription display */}
                     {isLiveTranscribing && (
-                      <div className="mb-4 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-300 rounded-xl animate-fade-in shadow-sm">
+                      <div className="mb-4 p-4 bg-muted border border-border rounded-lg animate-fade-in">
                         <div className="flex items-center gap-2 mb-2">
-                          <Radio className="w-4 h-4 text-teal-600 animate-pulse" />
-                          <p className="text-xs text-teal-700 font-semibold">🎙️ Live Transcription Active</p>
+                          <Radio className="w-4 h-4 text-foreground animate-pulse" />
+                          <p className="text-xs text-foreground font-semibold">LIVE TRANSCRIPTION ACTIVE</p>
                         </div>
                         {interimTranscript ? (
-                          <p className="text-sm text-gray-700 italic leading-relaxed">
+                          <p className="text-sm text-foreground italic leading-relaxed">
                             {interimTranscript}
-                            <span className="inline-block w-1 h-4 bg-teal-600 ml-1 animate-pulse"></span>
+                            <span className="inline-block w-1 h-4 bg-foreground ml-1 animate-pulse"></span>
                           </p>
                         ) : (
                           <div>
-                            <p className="text-sm text-gray-400 italic mb-2">
+                            <p className="text-sm text-muted-foreground italic mb-2">
                               Listening...
-                              <span className="inline-block w-1 h-4 bg-gray-400 ml-1 animate-pulse"></span>
+                              <span className="inline-block w-1 h-4 bg-muted-foreground ml-1 animate-pulse"></span>
                             </p>
-                            <p className="text-xs text-gray-500 bg-white/50 rounded px-2 py-1">
-                              💡 Speak clearly. Transcription updates every 2 seconds. Open console (F12) for diagnostic info.
+                            <p className="text-xs text-muted-foreground bg-background rounded px-2 py-1">
+                              Speak clearly. Transcription updates every 2 seconds. Open console (F12) for diagnostic info.
                             </p>
                           </div>
                         )}
@@ -687,7 +684,7 @@ export default function App() {
                     )}
                     
                     <div className="flex justify-between items-center mb-3">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {isLiveTranscribing ? "Live transcript:" : "Transcribed text:"}
                       </p>
                       {!isRecording && (
@@ -708,7 +705,7 @@ export default function App() {
                           onClick={stopLiveRecording}
                           variant="destructive"
                           size="sm"
-                          className="text-xs bg-red-500 hover:bg-red-600"
+                          className="text-xs"
                         >
                           <MicOff className="w-3 h-3 mr-1" />
                           Stop Recording
@@ -718,7 +715,7 @@ export default function App() {
                     <Textarea
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
-                      className="w-full flex-1 bg-white rounded-xl border-gray-300 resize-none transition-all mb-4"
+                      className="w-full flex-1 bg-background rounded-lg border-border resize-none transition-all mb-4"
                       placeholder="Your transcribed text will appear here..."
                     />
                     
@@ -734,7 +731,7 @@ export default function App() {
               <Textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="w-full h-full bg-white/60 backdrop-blur-sm rounded-2xl border-2 border-gray-200 p-6 resize-none"
+                className="w-full h-full bg-background rounded-lg border border-border p-6 resize-none"
                 placeholder={
                   inputMode === "notes"
                     ? "Paste or type your medical notes here...\n\nExample: Patient is a 45-year-old female presenting with complaints of..."
@@ -750,7 +747,7 @@ export default function App() {
               <Button
                 onClick={analyzeText}
                 disabled={isAnalyzing || isProcessingOCR || !inputText.trim()}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 rounded-xl mb-4"
+                className="w-full bg-foreground hover:bg-foreground/90 text-background py-6 rounded-lg mb-4"
               >
                 {isAnalyzing ? (
                   <>
@@ -768,28 +765,29 @@ export default function App() {
               </Button>
 
               {/* Caption */}
-              <p className="text-xs text-center text-gray-500">
-                🔒 Offline Safe Mode — Results saved locally
+              <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
+                <Lock className="w-3 h-3" />
+                Offline Safe Mode -- Results saved locally
               </p>
             </>
           )}
         </div>
 
         {/* Right Half - Results Area */}
-        <div className="w-full lg:w-1/2 bg-white/40 backdrop-blur-sm p-6 lg:p-10 flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200">
+        <div className="w-full lg:w-1/2 bg-muted p-6 lg:p-10 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
           {inputMode === "stream" ? (
             <div className="flex-1 flex flex-col">
-              <h2 className="text-gray-800 mb-4">🧠 Stream Analysis</h2>
+              <h2 className="text-foreground mb-4">Stream Analysis</h2>
               
               {sceneSummary ? (
                 <div className="flex-1 flex flex-col gap-6">
                   {/* Latest Scene Description */}
                   <div>
-                    <h3 className="text-gray-700 mb-3">Latest Scene Description</h3>
-                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl border-2 border-teal-200 p-6">
+                    <h3 className="text-foreground mb-3">Latest Scene Description</h3>
+                    <div className="bg-background rounded-lg border border-border p-6">
                       <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-teal-600 rounded-full mt-2 animate-pulse"></div>
-                        <p className="text-gray-800 leading-relaxed flex-1">
+                        <div className="w-2 h-2 bg-foreground rounded-full mt-2 animate-pulse"></div>
+                        <p className="text-foreground leading-relaxed flex-1">
                           {sceneSummary}
                         </p>
                       </div>
@@ -797,9 +795,9 @@ export default function App() {
                   </div>
                   
                   {/* Info Box */}
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-4">
-                    <h4 className="text-sm text-gray-700 mb-2">💡 About Stream Mode</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed">
+                  <div className="bg-background rounded-lg border border-border p-4">
+                    <h4 className="text-sm text-foreground mb-2">About Stream Mode</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       Stream mode uses AI vision to analyze live video in real-time. 
                       The AI observes facial expressions, gestures, body language, and interactions 
                       to provide contextual descriptions of the consultation.
@@ -807,15 +805,15 @@ export default function App() {
                   </div>
                   
                   {/* Suggestions for next steps */}
-                  <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
-                    <p className="text-xs text-teal-700">
-                      <strong>💬 Next Steps:</strong> After streaming, switch to Speech or Plain Text mode 
+                  <div className="bg-background border border-border rounded-lg p-4">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Next Steps:</strong> After streaming, switch to Speech or Plain Text mode 
                       to analyze your consultation notes for potential biases.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400">
+                <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
                   <Brain className="w-20 h-20 mb-4 opacity-30" />
                   <p className="text-lg mb-2">No Stream Data Yet</p>
                   <p className="text-sm max-w-sm">
@@ -833,14 +831,14 @@ export default function App() {
 
               {/* Detected Biases */}
               <div className="mb-6">
-                <h3 className="text-gray-800 mb-3">Detected Biases (Text)</h3>
+                <h3 className="text-foreground mb-3">Detected Biases (Text)</h3>
                 <div className="flex flex-wrap gap-2">
                   {analysisResult.detectedBiases.length > 0 ? (
                     analysisResult.detectedBiases.map((bias, index) => (
                       <BiasChip key={index} label={bias} />
                     ))
                   ) : (
-                    <p className="text-sm text-green-600">✓ No significant biases detected</p>
+                    <p className="text-sm text-muted-foreground">No significant biases detected</p>
                   )}
                 </div>
               </div>
@@ -848,21 +846,21 @@ export default function App() {
               {/* Non-Verbal Cues (if any) */}
               {analysisResult.nonVerbalCues && analysisResult.nonVerbalCues.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-gray-800 mb-3">Non-Verbal Cues (Video)</h3>
+                  <h3 className="text-foreground mb-3">Non-Verbal Cues (Video)</h3>
                   <div className="flex flex-wrap gap-2">
                     {analysisResult.nonVerbalCues.map((cue, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-sm border border-amber-300"
+                        className="px-3 py-1.5 bg-muted text-foreground rounded-full text-sm border border-border"
                       >
-                        📹 {cue}
+                        {cue}
                       </span>
                     ))}
                   </div>
                   {analysisResult.nonVerbalAnalysis && (
-                    <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <p className="text-xs text-amber-900">
-                        <strong>⚠️ Video Analysis:</strong> {analysisResult.nonVerbalAnalysis}
+                    <div className="mt-3 bg-muted border border-border rounded-lg p-3">
+                      <p className="text-xs text-foreground">
+                        <strong>Video Analysis:</strong> {analysisResult.nonVerbalAnalysis}
                       </p>
                     </div>
                   )}
@@ -871,9 +869,9 @@ export default function App() {
 
               {/* AI Explanation */}
               <div className="mb-6">
-                <h3 className="text-gray-800 mb-3">AI Explanation</h3>
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                <h3 className="text-foreground mb-3">AI Explanation</h3>
+                <div className="bg-background rounded-lg border border-border p-4">
+                  <p className="text-sm text-foreground leading-relaxed">
                     {analysisResult.explanation}
                   </p>
                 </div>
@@ -881,9 +879,9 @@ export default function App() {
 
               {/* Suggested Rewrite */}
               <div className="flex-1 mb-6">
-                <h3 className="text-gray-800 mb-3">Suggested Rewrite</h3>
-                <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl border border-teal-200 p-4 h-full overflow-auto">
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                <h3 className="text-foreground mb-3">Suggested Rewrite</h3>
+                <div className="bg-background rounded-lg border border-border p-4 h-full overflow-auto">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                     {analysisResult.suggestedRewrite}
                   </p>
                 </div>
@@ -893,14 +891,14 @@ export default function App() {
               <Button
                 onClick={saveCurrentAnalysis}
                 variant="outline"
-                className="w-full py-6 rounded-xl border-2 border-teal-600 text-teal-700 hover:bg-teal-50"
+                className="w-full py-6 rounded-lg border border-foreground text-foreground hover:bg-muted"
               >
                 <Save className="w-5 h-5 mr-2" />
-                Save Locally 💾
+                Save Locally
               </Button>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-400">
+            <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
               <div className="mb-4">
                 <svg
                   className="w-24 h-24 mx-auto opacity-30"
